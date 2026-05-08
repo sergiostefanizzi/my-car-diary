@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mv /tmp/mcd-backup/README.md.bak ./README.md)",
+      "Bash(mv /tmp/mcd-backup/LICENSE ./LICENSE)",
+      "Bash(npx --yes expo install react-native-paper react-native-safe-area-context expo-build-properties)",
+      "Bash(npm install *)",
+      "Bash(npx tsc *)",
+      "Bash(npx expo *)",
+      "Bash(echo \"exit=$?\")"
+    ]
+  }
+}
