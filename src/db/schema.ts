@@ -1,8 +1,20 @@
 import { sql } from 'drizzle-orm';
-import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { index, integer, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 export const odometerUnits = ['km', 'mi'] as const;
 export type OdometerUnit = (typeof odometerUnits)[number];
+
+export const recordTypes = [
+  'oil_change',
+  'tire_rotation',
+  'tire_replacement',
+  'inspection',
+  'service',
+  'repair',
+  'part_replacement',
+  'other',
+] as const;
+export type RecordType = (typeof recordTypes)[number];
 
 export const vehicles = sqliteTable('vehicles', {
   id: integer('id').primaryKey({ autoIncrement: true }),
@@ -24,3 +36,30 @@ export const vehicles = sqliteTable('vehicles', {
 
 export type Vehicle = typeof vehicles.$inferSelect;
 export type NewVehicle = typeof vehicles.$inferInsert;
+
+export const maintenanceRecords = sqliteTable(
+  'maintenance_records',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    vehicleId: integer('vehicle_id')
+      .notNull()
+      .references(() => vehicles.id, { onDelete: 'cascade' }),
+    type: text('type', { enum: recordTypes }).notNull(),
+    date: text('date').notNull(),
+    odometer: integer('odometer').notNull(),
+    cost: real('cost'),
+    currency: text('currency').notNull().default('EUR'),
+    vendor: text('vendor'),
+    notes: text('notes'),
+    createdAt: text('created_at')
+      .notNull()
+      .default(sql`(CURRENT_TIMESTAMP)`),
+  },
+  (t) => ({
+    byVehicleDate: index('maintenance_records_vehicle_date_idx').on(t.vehicleId, t.date),
+    byVehicleType: index('maintenance_records_vehicle_type_idx').on(t.vehicleId, t.type),
+  }),
+);
+
+export type MaintenanceRecord = typeof maintenanceRecords.$inferSelect;
+export type NewMaintenanceRecord = typeof maintenanceRecords.$inferInsert;

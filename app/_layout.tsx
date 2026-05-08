@@ -40,6 +40,9 @@ export default function RootLayout() {
               <Stack.Screen name="vehicles/index" options={{ title: t('vehicles.title') }} />
               <Stack.Screen name="vehicles/new" options={{ title: t('vehicles.new') }} />
               <Stack.Screen name="vehicles/[id]/edit" options={{ title: t('vehicles.edit') }} />
+              <Stack.Screen name="records/new" options={{ title: t('records.new') }} />
+              <Stack.Screen name="records/[id]/index" options={{ title: t('records.title') }} />
+              <Stack.Screen name="records/[id]/edit" options={{ title: t('records.edit') }} />
               <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
             </Stack>
           )}

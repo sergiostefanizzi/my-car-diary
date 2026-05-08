@@ -9,7 +9,9 @@
       "Bash(npx expo *)",
       "Bash(echo \"exit=$?\")",
       "Bash(npx --yes expo install expo-sqlite @react-native-async-storage/async-storage)",
-      "Bash(npx drizzle-kit *)"
+      "Bash(npx drizzle-kit *)",
+      "Bash(npm ls *)",
+      "Bash(npx --yes expo install @react-native-community/datetimepicker)"
     ]
   }
 }
