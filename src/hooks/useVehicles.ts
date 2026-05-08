@@ -1,6 +1,5 @@
-import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { desc, eq } from 'drizzle-orm';
-import { useEffect } from 'react';
+import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 
 import { db } from '@/src/db/client';
 import { type Vehicle, vehicles } from '@/src/db/schema';
@@ -24,21 +23,5 @@ export function useVehicle(id: number | null | undefined): Vehicle | undefined {
 
 export function useCurrentVehicle(): Vehicle | undefined {
   const currentVehicleId = useCurrentVehicleStore((s) => s.currentVehicleId);
-  const setCurrentVehicleId = useCurrentVehicleStore((s) => s.setCurrentVehicleId);
-  const { data: all } = useLiveQuery(
-    db.select().from(vehicles).orderBy(desc(vehicles.createdAt)),
-  );
-  const current = all.find((v) => v.id === currentVehicleId);
-
-  useEffect(() => {
-    if (currentVehicleId === null && all.length > 0) {
-      setCurrentVehicleId(all[0].id);
-    } else if (currentVehicleId !== null && !current && all.length > 0) {
-      setCurrentVehicleId(all[0].id);
-    } else if (all.length === 0 && currentVehicleId !== null) {
-      setCurrentVehicleId(null);
-    }
-  }, [currentVehicleId, current, all, setCurrentVehicleId]);
-
-  return current;
+  return useVehicle(currentVehicleId);
 }

@@ -11,7 +11,12 @@
       "Bash(npx --yes expo install expo-sqlite @react-native-async-storage/async-storage)",
       "Bash(npx drizzle-kit *)",
       "Bash(npm ls *)",
-      "Bash(npx --yes expo install @react-native-community/datetimepicker)"
+      "Bash(npx --yes expo install @react-native-community/datetimepicker)",
+      "Bash(Tee-Object -FilePath expo-start.log)",
+      "Bash(tee expo-start.log)",
+      "Bash(tasklist)",
+      "PowerShell(Get-CimInstance *)",
+      "PowerShell(Stop-Process *)"
     ]
   }
 }
