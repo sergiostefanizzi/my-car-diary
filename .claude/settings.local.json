@@ -16,7 +16,8 @@
       "Bash(tee expo-start.log)",
       "Bash(tasklist)",
       "PowerShell(Get-CimInstance *)",
-      "PowerShell(Stop-Process *)"
+      "PowerShell(Stop-Process *)",
+      "Bash(npx --yes expo install react-native-gifted-charts react-native-svg react-native-linear-gradient)"
     ]
   }
 }
