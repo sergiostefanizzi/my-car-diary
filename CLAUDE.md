@@ -18,9 +18,10 @@ UI language is currently **English only**, but i18n is wired through `src/i18n/`
 - **Zustand** (with `persist` + AsyncStorage) for cross-screen UI state
 - **react-hook-form + zod** for forms and validation
 - **@react-native-community/datetimepicker** (Android native dialog, opened imperatively via `DateTimePickerAndroid.open`)
+- **react-native-gifted-charts** (with `react-native-svg` + `react-native-linear-gradient` peers — all bundled in Expo Go SDK 54) for the consumption line chart
 - Android package: `com.sergiostefanizzi.mycardiary`, `minSdkVersion: 26` (set via `expo-build-properties` plugin in `app.json`)
 
-Notifications, fuel-specific UI, reminders, and backup/restore land in later milestones — not yet installed.
+Notifications, reminders, and backup/restore land in later milestones — not yet installed.
 
 ## Commands
 
@@ -49,17 +50,19 @@ app/                     # expo-router routes (file = route)
   (tabs)/_layout.tsx     # Tab bar: Dashboard / History / Reminders / Stats
   (tabs)/index.tsx       # Dashboard
   (tabs)/history.tsx     # Filterable record history (chips + month grouping)
+  (tabs)/stats.tsx       # KPI cards + consumption line chart + refills list + FAB
   vehicles/              # Vehicles list, new, [id]/edit
   records/               # Records new, [id], [id]/edit
+  fuel/                  # Fuel entries new, [id], [id]/edit
   modal.tsx              # Default modal route from template
 
 src/                     # All non-route code lives here
-  db/                    # schema.ts (vehicles, maintenance_records), client.ts, useDbMigrations.ts, migrations/
-  repositories/          # vehicleRepo, recordRepo — only place that touches db/
-  services/              # Domain logic: reminderEngine, notifications (M5)
+  db/                    # schema.ts (vehicles, maintenance_records, fuel_entries), client.ts, useDbMigrations.ts, migrations/
+  repositories/          # vehicleRepo, recordRepo, fuelRepo — only place that touches db/
+  services/              # Domain logic: stats (consumption + spend), reminderEngine/notifications (M5)
   stores/                # Zustand stores (currentVehicle persisted via AsyncStorage)
-  hooks/                 # useVehicles, useVehicle, useCurrentVehicle, useRecords, useRecord
-  components/            # VehicleForm, RecordForm, CurrentVehicleSync
+  hooks/                 # useVehicles, useVehicle, useCurrentVehicle, useRecords, useRecord, useFuelEntries, useFuelEntry
+  components/            # VehicleForm, RecordForm, FuelForm, CurrentVehicleSync
   i18n/                  # en.ts dictionary + type-safe t(key) helper
   theme/                 # Paper MD3 light/dark themes
   utils/                 # date.ts (ISO date helpers), recordType.ts (icon map)
@@ -94,6 +97,10 @@ Hooks use `useLiveQuery` from `drizzle-orm/expo-sqlite` for reactive reads. Writ
 
 `src/i18n/index.ts` exports `t(key)` with a recursively-typed `TranslationKey` derived from `en.ts` — adding a key in `en.ts` immediately makes it autocompletable. Calling `t('foo.bar')` with a key that doesn't exist is a compile error. Don't hardcode user-facing strings; add them to `en.ts`. For dynamically-built keys (e.g. `t(\`records.types.\${type}\`)`), cast the key as `TranslationKey`.
 
+### Stats & consumption
+
+Stats logic lives in `src/services/stats.ts` as **pure functions** (no React) so it stays testable. `computeConsumption(entries, odometerUnit)` walks consecutive **full-tank** entries chronologically and emits L/100km for `km` vehicles or MPG (US, `LITERS_PER_US_GALLON = 3.785411784`) for `mi`. Partial-tank entries are intentionally excluded — only full-tank pairs are physically meaningful. `totalCost` is **persisted** on each fuel entry (not derived) so historical rows stay accurate even if the user later edits liters/price; `FuelForm` auto-fills it from `liters * pricePerLiter` but stops syncing once the user manually edits the field (tracked via a `useRef` flag). On fuel create/edit, if `odometer > vehicle.currentOdometer` the vehicle row is updated — same rule as maintenance records.
+
 ### Theme
 
 `src/theme/index.ts` exports `lightTheme`/`darkTheme` (Paper MD3). The root layout passes one to `PaperProvider` based on `useColorScheme()`. Do not introduce a second theme system — extend these.
@@ -105,7 +112,7 @@ The project is built **milestone-by-milestone**. Roadmap:
 - **M1** ✅ Bootstrap: Expo + Paper + i18n + tabs
 - **M2** ✅ DB + Vehicles: Drizzle schema, multi-vehicle CRUD, current-vehicle store
 - **M3** ✅ Maintenance records: CRUD, type picker, filterable history, dashboard recents
-- **M4** Fuel + stats (fuel entries table, consumption math, stats screen)
+- **M4** ✅ Fuel + stats: `fuel_entries` table, fuel CRUD, consumption math (full-tank pairs → L/100km or MPG), Stats screen with KPIs + line chart
 - **M5** Intervals + reminders + local notifications (`expo-notifications`, reminder engine)
 - **M6** Settings, backup/restore JSON, re-enable typed routes, EAS Android build
 
