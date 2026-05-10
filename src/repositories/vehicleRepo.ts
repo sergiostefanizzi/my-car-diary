@@ -2,6 +2,7 @@ import { desc, eq } from 'drizzle-orm';
 
 import { db } from '@/src/db/client';
 import { type NewVehicle, type Vehicle, vehicles } from '@/src/db/schema';
+import { cancelAllForVehicleAsync } from '@/src/services/notifications';
 
 export const vehicleRepo = {
   async list(): Promise<Vehicle[]> {
@@ -27,6 +28,7 @@ export const vehicleRepo = {
   },
 
   async remove(id: number): Promise<void> {
+    await cancelAllForVehicleAsync(id).catch(() => {});
     await db.delete(vehicles).where(eq(vehicles.id, id));
   },
 };

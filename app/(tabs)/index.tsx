@@ -3,16 +3,22 @@ import { StyleSheet, View } from 'react-native';
 import { Appbar, Button, Card, Divider, FAB, List, Text } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useIntervals } from '@/src/hooks/useIntervals';
 import { useRecords } from '@/src/hooks/useRecords';
 import { useCurrentVehicle } from '@/src/hooks/useVehicles';
 import { type TranslationKey, t } from '@/src/i18n';
+import { computeAllReminders } from '@/src/services/reminders';
 import { formatDisplayDate } from '@/src/utils/date';
 import { recordTypeIcons } from '@/src/utils/recordType';
 
 export default function DashboardScreen() {
   const vehicle = useCurrentVehicle();
   const { data: records } = useRecords(vehicle?.id);
+  const { data: intervals } = useIntervals(vehicle?.id);
   const recent = records.slice(0, 3);
+  const upcoming = vehicle
+    ? computeAllReminders(intervals.filter((i) => i.enabled), records, vehicle).slice(0, 3)
+    : [];
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -42,6 +48,53 @@ export default function DashboardScreen() {
                 </Text>
               </Card.Content>
             </Card>
+
+            {upcoming.length > 0 && (
+              <Card mode="outlined" style={styles.recentCard}>
+                <Card.Title
+                  title={t('dashboard.upcoming')}
+                  right={(props) => (
+                    <Button {...props} compact onPress={() => router.push('/(tabs)/reminders')}>
+                      {t('dashboard.seeAll')}
+                    </Button>
+                  )}
+                />
+                <Card.Content>
+                  {upcoming.map((r, idx) => {
+                    const segs: string[] = [];
+                    if (r.daysUntil !== null) {
+                      segs.push(
+                        r.daysUntil < 0
+                          ? t('reminders.overdueByDays').replace('{n}', String(-r.daysUntil))
+                          : t('reminders.dueInDays').replace('{n}', String(r.daysUntil)),
+                      );
+                    }
+                    if (r.kmUntil !== null) {
+                      const u = vehicle.odometerUnit;
+                      segs.push(
+                        r.kmUntil < 0
+                          ? t('reminders.overdueByKm').replace('{n}', `${(-r.kmUntil).toLocaleString()} ${u}`)
+                          : t('reminders.dueInKm').replace('{n}', `${r.kmUntil.toLocaleString()} ${u}`),
+                      );
+                    }
+                    return (
+                      <View key={`${r.vehicleId}-${r.recordType}`}>
+                        {idx > 0 && <Divider />}
+                        <List.Item
+                          title={t(`records.types.${r.recordType}` as TranslationKey)}
+                          description={segs.join(' · ') || undefined}
+                          left={(props) => (
+                            <List.Icon {...props} icon={recordTypeIcons[r.recordType]} />
+                          )}
+                          onPress={() => router.push('/(tabs)/reminders')}
+                          style={styles.listItem}
+                        />
+                      </View>
+                    );
+                  })}
+                </Card.Content>
+              </Card>
+            )}
 
             <Card mode="outlined" style={styles.recentCard}>
               <Card.Title

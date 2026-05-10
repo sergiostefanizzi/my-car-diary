@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { index, integer, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { index, integer, real, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 export const odometerUnits = ['km', 'mi'] as const;
 export type OdometerUnit = (typeof odometerUnits)[number];
@@ -91,3 +91,29 @@ export const fuelEntries = sqliteTable(
 
 export type FuelEntry = typeof fuelEntries.$inferSelect;
 export type NewFuelEntry = typeof fuelEntries.$inferInsert;
+
+export const maintenanceIntervals = sqliteTable(
+  'maintenance_intervals',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    vehicleId: integer('vehicle_id')
+      .notNull()
+      .references(() => vehicles.id, { onDelete: 'cascade' }),
+    recordType: text('record_type', { enum: recordTypes }).notNull(),
+    intervalKm: integer('interval_km'),
+    intervalDays: integer('interval_days'),
+    enabled: integer('enabled', { mode: 'boolean' }).notNull().default(true),
+    createdAt: text('created_at')
+      .notNull()
+      .default(sql`(CURRENT_TIMESTAMP)`),
+  },
+  (t) => ({
+    byVehicleType: uniqueIndex('maintenance_intervals_vehicle_type_uq').on(
+      t.vehicleId,
+      t.recordType,
+    ),
+  }),
+);
+
+export type MaintenanceInterval = typeof maintenanceIntervals.$inferSelect;
+export type NewMaintenanceInterval = typeof maintenanceIntervals.$inferInsert;

@@ -33,6 +33,13 @@ export function formatDisplayDate(value: string, locale = 'en-US'): string {
   });
 }
 
+export function addDaysIso(value: string, days: number): string {
+  const date = parseIsoDate(value);
+  if (!date) return value;
+  date.setDate(date.getDate() + days);
+  return toIsoDate(date);
+}
+
 export function formatMonthKey(value: string): string {
   return value.slice(0, 7);
 }

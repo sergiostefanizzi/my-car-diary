@@ -8,6 +8,7 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { CurrentVehicleSync } from '@/src/components/CurrentVehicleSync';
+import { NotificationsSync } from '@/src/components/NotificationsSync';
 import { useDbMigrations } from '@/src/db/useDbMigrations';
 import { t } from '@/src/i18n';
 import { darkTheme, lightTheme } from '@/src/theme';
@@ -38,6 +39,7 @@ export default function RootLayout() {
           ) : (
             <>
               <CurrentVehicleSync />
+              <NotificationsSync />
               <Stack>
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen name="vehicles/index" options={{ title: t('vehicles.title') }} />
@@ -49,6 +51,9 @@ export default function RootLayout() {
               <Stack.Screen name="fuel/new" options={{ title: t('fuel.new') }} />
               <Stack.Screen name="fuel/[id]/index" options={{ title: t('fuel.title') }} />
               <Stack.Screen name="fuel/[id]/edit" options={{ title: t('fuel.edit') }} />
+              <Stack.Screen name="intervals/index" options={{ title: t('intervals.title') }} />
+              <Stack.Screen name="intervals/new" options={{ title: t('intervals.new') }} />
+              <Stack.Screen name="intervals/[type]/edit" options={{ title: t('intervals.edit') }} />
                 <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
               </Stack>
             </>
